@@ -1,7 +1,9 @@
 package com.codewithmosh;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import javax.swing.*;
 
 public class Display extends JPanel implements ActionListener {
@@ -19,10 +21,8 @@ public class Display extends JPanel implements ActionListener {
     private int apple_x;
     private int apple_y;
 
-    private boolean leftDirection = false;
-    private boolean rightDirection = true;
-    private boolean upDirection = false;
-    private boolean downDirection = false;
+
+
     private boolean inGame = true;
 
     private Timer timer;
@@ -30,13 +30,21 @@ public class Display extends JPanel implements ActionListener {
     private Image apple;
     private Image head;
 
+    public Display(){
+        initDisplay();
+    }
 
-    private void initBoard() {
+    private void initDisplay() {
 
-        addKeyListener(new TAdapter());
         setBackground(Color.black);
         setFocusable(true);
 
         setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
+    }
+
+
+    @Override
+    public void actionPerformed(ActionEvent actionEvent) {
+
     }
 }
