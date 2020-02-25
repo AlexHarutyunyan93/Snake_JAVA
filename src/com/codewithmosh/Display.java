@@ -23,7 +23,7 @@ public class Display extends JPanel implements ActionListener {
     private final int DOT_SIZE = 10;
     private final int ALL_DOTS = 900;
     private final int RAND_POS = 29;
-    private final int DELAY = 500;
+    private final int DELAY = 150;
 
     private final int x[] = new int[ALL_DOTS];
     private final int y[] = new int[ALL_DOTS];
@@ -38,7 +38,7 @@ public class Display extends JPanel implements ActionListener {
     private final String[] micDirections = {"LEFT", "UP", "RIGHT", "DOWN"};
     private String prevDirection = micDirections[0];
     private String micDirection = micDirections[0];
-    private int micCheckLevel = 1;
+    private int micCheckLevel = 10;
 
     private boolean leftDirection = false;
     private boolean rightDirection = true;
@@ -84,33 +84,15 @@ public class Display extends JPanel implements ActionListener {
 
     private void micLookForApple(){
         if(!founded){
-            int checkLevel = 1;
-            int x1 = mic_x - checkLevel * 10;
-            int y1 = mic_y - checkLevel * 10;
+            if(Math.abs(apple_y - mic_y) < (micCheckLevel * 10) || Math.abs(apple_x - mic_x) < (micCheckLevel * 10)){
+                founded = true;
+            }
 
-            int x2 = mic_x + checkLevel * 10;
-            int y2 = mic_y - checkLevel * 10;
-
-            int x3 = mic_x - checkLevel * 10;
-            int y3 = mic_y + checkLevel * 10;
-
-            int x4 = mic_x + checkLevel * 10;
-            int y4 = mic_y + checkLevel * 10;
-
-            do{
-
-
-//                if(Arrays.asList(checkcodinatsX).contains(apple_x) && Arrays.asList(checkcodinatsY).contains(apple_y)){
-//                    founded = true;
-//                } else {
-//                    founded = false;
-//                }
-
-                checkLevel++;
-
-            }while(founded || checkLevel > micCheckLevel);
-
-
+            if(founded){
+                micMoveToApple();
+            } else {
+                micMove();
+            }
         } else {
             micMoveToApple();
         }
@@ -127,7 +109,7 @@ public class Display extends JPanel implements ActionListener {
     }
     /////////////////////////////////////////////////////////////
     private void checkBords(){
-        if(mic_x < 10 || mic_y < 10 || mic_x > B_WIDTH-10 || mic_y > B_HEIGHT-10) {
+        if(mic_x < 20 || mic_y < 20 || mic_x > B_WIDTH-20 || mic_y > B_HEIGHT-20) {
             changeMoveDirection();
         }
     }
@@ -160,6 +142,7 @@ public class Display extends JPanel implements ActionListener {
     private void micMoveToApple(){
         if(mic_x == apple_x && mic_y == apple_y) {
             locateApple();
+            micCheckLevel++;
         } else if(mic_x != apple_x && mic_y != apple_y) {
             int x = B_WIDTH - mic_x - apple_x;
             int y = B_HEIGHT - mic_y - apple_y;
@@ -306,13 +289,13 @@ public class Display extends JPanel implements ActionListener {
 
         r = (int) (Math.random() * RAND_POS);
         apple_y = ((r * DOT_SIZE));
+        founded = false;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
 
         if (inGame) {
-
             checkApple();
             checkCollision();
             move();
