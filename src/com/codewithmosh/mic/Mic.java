@@ -13,8 +13,10 @@ public class Mic implements MicSchema {
     private DirectionEnum micDirection;
     private boolean founded;
     private int micCheckLevel;
+    private int lifeCicle;
 
-    public Mic(int x, int y){
+    public Mic(int x, int y, int b_WIDTH, int b_HEIGHT){
+        lifeCicle = 100;
         this.steps = 0;
         this.mic_x = x;
         this.mic_y = y;
@@ -31,6 +33,9 @@ public class Mic implements MicSchema {
 
     public void setFounded(boolean f){
         founded = f;
+    }
+    public int getLifeCicle(){
+        return lifeCicle;
     }
     @Override
     public void micMoveToApple(int appleX,int appleY) {
@@ -102,9 +107,11 @@ public class Mic implements MicSchema {
 
     @Override
     public void micLookForApple(int appleX, int appleY) {
+        lifeCicle--;
         if(!founded){
             if(Math.abs(appleY - mic_y) < (micCheckLevel * 10) || Math.abs(appleX - mic_x) < (micCheckLevel * 10)){
                 founded = true;
+                lifeCicle += 50;
             }
 
             if(founded){

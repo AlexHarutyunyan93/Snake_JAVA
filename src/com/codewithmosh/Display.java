@@ -12,38 +12,43 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class Display extends JPanel implements ActionListener {
 
-    private final int B_WIDTH = 600;
-    private final int B_HEIGHT = 400;
+    private final int B_WIDTH = 1200;
+    private final int B_HEIGHT = 800;
     private final int DOT_SIZE = 10;
     private final int ALL_DOTS = 900;
-    private final int RAND_POS = 29;
+    private final int RAND_POS = 79;
     private final int DELAY = 150;
 
     private int apple_x;
     private int apple_y;
+    private int banana_x;
+    private int banana_y;
 
     private boolean inGame = true;
 
     private Timer timer;
     private Image apple;
+    private Image banana;
     private Image[] micImages;
-    private Mic[] mics = new Mic[10];
+    private int micsSize;
+    private ArrayList<Mic> mics = new ArrayList<Mic>(micsSize);
     private Snake snake;
 
     public Display() {
 
         snake = new Snake(900);
-
-        for(int i = 0; i < mics.length; i++){
-            mics[i] = new Mic(300,150);
+        micsSize = 10;
+        for(int i = 0; i < micsSize; i++){
+            mics.add(new Mic(300,150, B_WIDTH, B_HEIGHT));
         }
-        micImages = new Image[10];
+        micImages = new Image[micsSize];
         initDisplay();
     }
 
@@ -58,12 +63,15 @@ public class Display extends JPanel implements ActionListener {
     }
 
     private void loadImages() {
+        ImageIcon iib = new ImageIcon("src/resources/banana.jpg");
+        banana = iib.getImage();
+
         ImageIcon iia = new ImageIcon("src/resources/apple.png");
         apple = iia.getImage();
 
         ImageIcon iih = new ImageIcon("src/resources/head.png");
 
-        for(int i = 0; i < mics.length; i++){
+        for(int i = 0; i < mics.size(); i++){
             micImages[i] = iih.getImage();
         }
     }
@@ -71,6 +79,7 @@ public class Display extends JPanel implements ActionListener {
     private void initGame() {
 
         locateApple();
+        locateBanana();
 
         timer = new Timer(DELAY, this);
         timer.start();
@@ -88,9 +97,10 @@ public class Display extends JPanel implements ActionListener {
         if (inGame) {
 
             g.drawImage(apple, apple_x, apple_y, this);
+            g.drawImage(banana, banana_x, banana_y, this);
 
-            for(int i = 0; i < mics.length; i++){
-                g.drawImage(micImages[i], mics[i].getX(), mics[i].getY(), this);
+            for(int i = 0; i < mics.size(); i++){
+                g.drawImage(micImages[i], mics.get(i).getX(), mics.get(i).getY(), this);
             }
 
             snake.doDrawing(g, this);
@@ -115,12 +125,16 @@ public class Display extends JPanel implements ActionListener {
     }
 
     private void checkApple() {
+        if ((snake.getX(0) == banana_x) && (snake.getY(0) == banana_y)) {
+            snake.setDots();
+            locateBanana();
+        }
         if ((snake.getX(0) == apple_x) && (snake.getY(0) == apple_y)) {
             snake.setDots();
             locateApple();
         } else{
-            for(int i = 0; i < mics.length; i++){
-               if ((mics[i].getX()== apple_x) && (mics[i].getY()== apple_y)){
+            for(int i = 0; i < mics.size(); i++){
+               if ((mics.get(i).getX()== apple_x) && (mics.get(i).getY()== apple_y)){
                    locateApple();
                }
             }
@@ -166,20 +180,36 @@ public class Display extends JPanel implements ActionListener {
         r = (int) (Math.random() * RAND_POS);
         apple_y = ((r * DOT_SIZE));
 
-        for(int i = 0; i < mics.length; i++){
-            mics[i].setFounded(false);
+        for(int i = 0; i < mics.size(); i++){
+            mics.get(i).setFounded(false);
         }
     }
 
+    private void locateBanana() {
+
+        int r = (int) (Math.random() * RAND_POS);
+        banana_x = ((r * DOT_SIZE));
+
+        r = (int) (Math.random() * RAND_POS);
+        banana_y = ((r * DOT_SIZE));
+
+//        for(int i = 0; i < mics.length; i++){
+//            mics[i].setFounded(false);
+//        }
+    }
     @Override
     public void actionPerformed(ActionEvent e) {
-
+        for(int i = 0; i < mics.size(); i++) {
+           if(mics.get(i).getLifeCicle() == 0){
+               mics.remove(i);
+           }
+        }
         if (inGame) {
             checkApple();
             checkCollision();
             snake.move();
-            for(int i = 0; i < mics.length; i++){
-                mics[i].micLookForApple(apple_x, apple_y);
+            for(int i = 0; i < mics.size(); i++){
+                mics.get(i).micLookForApple(apple_x, apple_y);
             }
         }
         repaint();

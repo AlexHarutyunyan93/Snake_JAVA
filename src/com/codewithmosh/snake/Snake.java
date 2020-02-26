@@ -1,8 +1,6 @@
 package com.codewithmosh.snake;
-
-import com.codewithmosh.DirectionEnum;
 import com.codewithmosh.KeyboardListener;
-import static com.sun.java.accessibility.util.AWTEventMonitor.addKeyListener;
+
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,12 +13,10 @@ public class Snake extends SnakeSchema {
     private Image head;
     private Image body;
     private  int DOT_SIZE;
-    private DirectionEnum moveDirection;
     private KeyboardListener keyboardListener;
 
     public Snake(int allDots){
         keyboardListener = new KeyboardListener();
-        moveDirection = keyboardListener.getPlayerDirecton();
 
         DOT_SIZE = 10;
         dots = 3;
