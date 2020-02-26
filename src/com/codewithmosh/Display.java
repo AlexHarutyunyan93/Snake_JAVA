@@ -1,6 +1,7 @@
 package com.codewithmosh;
 
 import com.codewithmosh.mic.Mic;
+import com.codewithmosh.snake.Snake;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -11,8 +12,6 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -26,69 +25,50 @@ public class Display extends JPanel implements ActionListener {
     private final int RAND_POS = 29;
     private final int DELAY = 150;
 
-    private final int x[] = new int[ALL_DOTS];
-    private final int y[] = new int[ALL_DOTS];
-
-    private int dots;
     private int apple_x;
     private int apple_y;
 
-    private boolean leftDirection = false;
-    private boolean rightDirection = true;
-    private boolean upDirection = false;
-    private boolean downDirection = false;
     private boolean inGame = true;
 
     private Timer timer;
-    private Image body;
     private Image apple;
     private Image[] micImages;
-    private Image head;
-    private Mic[] mics = new Mic[3];
+    private Mic[] mics = new Mic[10];
+    private Snake snake;
 
     public Display() {
+
+        snake = new Snake(900);
+
         for(int i = 0; i < mics.length; i++){
             mics[i] = new Mic(300,150);
         }
-        micImages = new Image[3];
+        micImages = new Image[10];
         initDisplay();
     }
 
     private void initDisplay() {
-
-        addKeyListener(new TAdapter());
         setBackground(Color.black);
         setFocusable(true);
-
+        addKeyListener(snake.getKeyboardListener());
         setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
         loadImages();
+        snake.loadImages();
         initGame();
     }
 
     private void loadImages() {
-
-        ImageIcon iid = new ImageIcon("src/resources/dot.png");
-        body = iid.getImage();
-
         ImageIcon iia = new ImageIcon("src/resources/apple.png");
         apple = iia.getImage();
 
-
         ImageIcon iih = new ImageIcon("src/resources/head.png");
-        head = iih.getImage();
+
         for(int i = 0; i < mics.length; i++){
             micImages[i] = iih.getImage();
         }
     }
 
     private void initGame() {
-
-        dots = 3;
-
-        for (int z = 0; z < dots; z++) {
-            x[z] = 50 - z * 10;
-            y[z] = 50;
-        }
 
         locateApple();
 
@@ -108,18 +88,12 @@ public class Display extends JPanel implements ActionListener {
         if (inGame) {
 
             g.drawImage(apple, apple_x, apple_y, this);
+
             for(int i = 0; i < mics.length; i++){
                 g.drawImage(micImages[i], mics[i].getX(), mics[i].getY(), this);
             }
 
-
-            for (int z = 0; z < dots; z++) {
-                if (z == 0) {
-                    g.drawImage(head, x[z], y[z], this);
-                } else {
-                    g.drawImage(body, x[z], y[z], this);
-                }
-            }
+            snake.doDrawing(g, this);
 
             Toolkit.getDefaultToolkit().sync();
 
@@ -141,8 +115,8 @@ public class Display extends JPanel implements ActionListener {
     }
 
     private void checkApple() {
-        if ((x[0] == apple_x) && (y[0] == apple_y)) {
-            dots++;
+        if ((snake.getX(0) == apple_x) && (snake.getY(0) == apple_y)) {
+            snake.setDots();
             locateApple();
         } else{
             for(int i = 0; i < mics.length; i++){
@@ -153,52 +127,29 @@ public class Display extends JPanel implements ActionListener {
         }
     }
 
-    private void move() {
-
-        for (int z = dots; z > 0; z--) {
-            x[z] = x[(z - 1)];
-            y[z] = y[(z - 1)];
-        }
-
-        if (leftDirection) {
-            x[0] -= DOT_SIZE;
-        }
-
-        if (rightDirection) {
-            x[0] += DOT_SIZE;
-        }
-
-        if (upDirection) {
-            y[0] -= DOT_SIZE;
-        }
-
-        if (downDirection) {
-            y[0] += DOT_SIZE;
-        }
-    }
 
     private void checkCollision() {
 
-        for (int z = dots; z > 0; z--) {
+        for (int z = snake.getDots(); z > 0; z--) {
 
-            if ((z > 4) && (x[0] == x[z]) && (y[0] == y[z])) {
+            if ((z > 4) && (snake.getX(0) == snake.getX(z)) && (snake.getY(0) == snake.getY(z))) {
                 inGame = false;
             }
         }
 
-        if (y[0] >= B_HEIGHT) {
+        if (snake.getY(0) >= B_HEIGHT) {
             inGame = false;
         }
 
-        if (y[0] < 0) {
+        if (snake.getY(0) < 0) {
             inGame = false;
         }
 
-        if (x[0] >= B_WIDTH) {
+        if (snake.getX(0) >= B_WIDTH) {
             inGame = false;
         }
 
-        if (x[0] < 0) {
+        if (snake.getX(0) < 0) {
             inGame = false;
         }
 
@@ -214,6 +165,7 @@ public class Display extends JPanel implements ActionListener {
 
         r = (int) (Math.random() * RAND_POS);
         apple_y = ((r * DOT_SIZE));
+
         for(int i = 0; i < mics.length; i++){
             mics[i].setFounded(false);
         }
@@ -225,46 +177,11 @@ public class Display extends JPanel implements ActionListener {
         if (inGame) {
             checkApple();
             checkCollision();
-            move();
+            snake.move();
             for(int i = 0; i < mics.length; i++){
                 mics[i].micLookForApple(apple_x, apple_y);
             }
-
         }
-
         repaint();
-    }
-
-    private class TAdapter extends KeyAdapter {
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-
-            int key = e.getKeyCode();
-
-            if ((key == KeyEvent.VK_LEFT) && (!rightDirection)) {
-                leftDirection = true;
-                upDirection = false;
-                downDirection = false;
-            }
-
-            if ((key == KeyEvent.VK_RIGHT) && (!leftDirection)) {
-                rightDirection = true;
-                upDirection = false;
-                downDirection = false;
-            }
-
-            if ((key == KeyEvent.VK_UP) && (!downDirection)) {
-                upDirection = true;
-                rightDirection = false;
-                leftDirection = false;
-            }
-
-            if ((key == KeyEvent.VK_DOWN) && (!upDirection)) {
-                downDirection = true;
-                rightDirection = false;
-                leftDirection = false;
-            }
-        }
     }
 }
