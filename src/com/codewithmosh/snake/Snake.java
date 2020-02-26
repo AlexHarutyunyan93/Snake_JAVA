@@ -27,6 +27,7 @@ public class Snake extends SnakeSchema {
             x[z] = 50 - z * 10;
             y[z] = 50;
         }
+        loadImages();
     }
 
     public int getX(int index){

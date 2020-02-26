@@ -44,9 +44,10 @@ public class Display extends JPanel implements ActionListener {
     public Display() {
 
         snake = new Snake(900);
-        micsSize = 10;
+        micsSize = 20;
+
         for(int i = 0; i < micsSize; i++){
-            mics.add(new Mic(300,150, B_WIDTH, B_HEIGHT));
+            mics.add(new Mic(400,200, B_WIDTH, B_HEIGHT));
         }
         micImages = new Image[micsSize];
         initDisplay();
@@ -58,7 +59,6 @@ public class Display extends JPanel implements ActionListener {
         addKeyListener(snake.getKeyboardListener());
         setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
         loadImages();
-        snake.loadImages();
         initGame();
     }
 
@@ -69,11 +69,6 @@ public class Display extends JPanel implements ActionListener {
         ImageIcon iia = new ImageIcon("src/resources/apple.png");
         apple = iia.getImage();
 
-        ImageIcon iih = new ImageIcon("src/resources/head.png");
-
-        for(int i = 0; i < mics.size(); i++){
-            micImages[i] = iih.getImage();
-        }
     }
 
     private void initGame() {
@@ -100,7 +95,7 @@ public class Display extends JPanel implements ActionListener {
             g.drawImage(banana, banana_x, banana_y, this);
 
             for(int i = 0; i < mics.size(); i++){
-                g.drawImage(micImages[i], mics.get(i).getX(), mics.get(i).getY(), this);
+                mics.get(i).doDrawing(g,this);
             }
 
             snake.doDrawing(g, this);

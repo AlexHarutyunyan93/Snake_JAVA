@@ -1,6 +1,12 @@
 package com.codewithmosh.mic;
 
 import com.codewithmosh.DirectionEnum;
+
+import javax.swing.*;
+
+import java.awt.*;
+import java.awt.image.ImageObserver;
+
 import static com.codewithmosh.DirectionEnum.*;
 
 public class Mic implements MicSchema {
@@ -14,19 +20,23 @@ public class Mic implements MicSchema {
     private boolean founded;
     private int micCheckLevel;
     private int lifeCicle;
+    private Image micImage;
 
     public Mic(int x, int y, int b_WIDTH, int b_HEIGHT){
-        lifeCicle = 100;
+        lifeCicle = 150;
         this.steps = 0;
         this.mic_x = x;
         this.mic_y = y;
         micDirection = LEFT;
         founded = false;
         micCheckLevel = 1;
+        loadImages();
     }
+
     public int getX(){
         return mic_x;
     }
+
     public int getY(){
         return mic_y;
     }
@@ -34,10 +44,21 @@ public class Mic implements MicSchema {
     public void setFounded(boolean f){
         founded = f;
     }
+
     public int getLifeCicle(){
         return lifeCicle;
     }
-    @Override
+
+    public void loadImages() {
+        ImageIcon iih = new ImageIcon("src/resources/head.png");
+        micImage = iih.getImage();
+    }
+
+    public void doDrawing(Graphics g, ImageObserver parent){
+        g.drawImage(micImage, getX(), getY(), parent);
+    }
+
+        @Override
     public void micMoveToApple(int appleX,int appleY) {
         if(mic_x == appleX && mic_y == appleY) {
             micCheckLevel++;
