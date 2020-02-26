@@ -1,5 +1,7 @@
 package com.codewithmosh;
 
+import com.codewithmosh.mic.Mic;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -11,15 +13,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.Arrays;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class Display extends JPanel implements ActionListener {
 
-    private final int B_WIDTH = 300;
-    private final int B_HEIGHT = 300;
+    private final int B_WIDTH = 600;
+    private final int B_HEIGHT = 400;
     private final int DOT_SIZE = 10;
     private final int ALL_DOTS = 900;
     private final int RAND_POS = 29;
@@ -31,14 +32,6 @@ public class Display extends JPanel implements ActionListener {
     private int dots;
     private int apple_x;
     private int apple_y;
-    private int mic_x;
-    private int mic_y;
-    private boolean founded = false;
-    private int step = 0;
-    private final String[] micDirections = {"LEFT", "UP", "RIGHT", "DOWN"};
-    private String prevDirection = micDirections[0];
-    private String micDirection = micDirections[0];
-    private int micCheckLevel = 10;
 
     private boolean leftDirection = false;
     private boolean rightDirection = true;
@@ -47,13 +40,17 @@ public class Display extends JPanel implements ActionListener {
     private boolean inGame = true;
 
     private Timer timer;
-    private Image ball;
+    private Image body;
     private Image apple;
-    private Image mic;
+    private Image[] micImages;
     private Image head;
+    private Mic[] mics = new Mic[3];
 
     public Display() {
-
+        for(int i = 0; i < mics.length; i++){
+            mics[i] = new Mic(300,150);
+        }
+        micImages = new Image[3];
         initDisplay();
     }
 
@@ -71,7 +68,7 @@ public class Display extends JPanel implements ActionListener {
     private void loadImages() {
 
         ImageIcon iid = new ImageIcon("src/resources/dot.png");
-        ball = iid.getImage();
+        body = iid.getImage();
 
         ImageIcon iia = new ImageIcon("src/resources/apple.png");
         apple = iia.getImage();
@@ -79,91 +76,12 @@ public class Display extends JPanel implements ActionListener {
 
         ImageIcon iih = new ImageIcon("src/resources/head.png");
         head = iih.getImage();
-        mic = iih.getImage();
-    }
-
-    private void micLookForApple(){
-        if(!founded){
-            if(Math.abs(apple_y - mic_y) < (micCheckLevel * 10) || Math.abs(apple_x - mic_x) < (micCheckLevel * 10)){
-                founded = true;
-            }
-
-            if(founded){
-                micMoveToApple();
-            } else {
-                micMove();
-            }
-        } else {
-            micMoveToApple();
-        }
-    }
-    /////////////////////////////////////////////////////////////
-    private void changeMoveDirection(){
-        int nextDirection = (int) Math.floor(Math.random()*4);
-        if(micDirections[nextDirection] != prevDirection){
-            prevDirection = new String(micDirection);
-            micDirection = micDirections[nextDirection];
-        } else {
-            changeMoveDirection();
-        }
-    }
-    /////////////////////////////////////////////////////////////
-    private void checkBords(){
-        if(mic_x < 20 || mic_y < 20 || mic_x > B_WIDTH-20 || mic_y > B_HEIGHT-20) {
-            changeMoveDirection();
+        for(int i = 0; i < mics.length; i++){
+            micImages[i] = iih.getImage();
         }
     }
 
-    private void micMove(){
-        if(step > 4){
-            changeMoveDirection();
-            checkBords();
-            step = 0;
-        }
-        switch (micDirection){
-            case "LEFT":
-                mic_x-=10;
-                break;
-            case "UP":
-                mic_y-=10;
-                break;
-            case "RIGHT":
-                mic_x+=10;
-                break;
-            case "DOWN":
-                mic_y+=10;
-                break;
-            default:
-                break;
-        }
-        step++;
-    }
-///////////////////////////////////////
-    private void micMoveToApple(){
-        if(mic_x == apple_x && mic_y == apple_y) {
-            locateApple();
-            micCheckLevel++;
-        } else if(mic_x != apple_x && mic_y != apple_y) {
-            int x = B_WIDTH - mic_x - apple_x;
-            int y = B_HEIGHT - mic_y - apple_y;
-            if(x > y) {
-                mic_x = mic_x < apple_x ? mic_x + 10 : mic_x - 10;
-            } else {
-                mic_y = mic_y < apple_y ? mic_y + 10 : mic_y - 10;
-            }
-        } else {
-            if (mic_x != apple_x) {
-                mic_x = mic_x < apple_x ? mic_x + 10 : mic_x - 10;
-            }
-            if(mic_y != apple_y){
-                mic_y = mic_y < apple_y ? mic_y + 10 : mic_y - 10;
-            }
-
-        }
-    }
     private void initGame() {
-        mic_x = 200;
-        mic_y = 200;
 
         dots = 3;
 
@@ -190,13 +108,16 @@ public class Display extends JPanel implements ActionListener {
         if (inGame) {
 
             g.drawImage(apple, apple_x, apple_y, this);
-            g.drawImage(mic, mic_x, mic_y, this);
+            for(int i = 0; i < mics.length; i++){
+                g.drawImage(micImages[i], mics[i].getX(), mics[i].getY(), this);
+            }
+
 
             for (int z = 0; z < dots; z++) {
                 if (z == 0) {
                     g.drawImage(head, x[z], y[z], this);
                 } else {
-                    g.drawImage(ball, x[z], y[z], this);
+                    g.drawImage(body, x[z], y[z], this);
                 }
             }
 
@@ -220,11 +141,15 @@ public class Display extends JPanel implements ActionListener {
     }
 
     private void checkApple() {
-
         if ((x[0] == apple_x) && (y[0] == apple_y)) {
-
             dots++;
             locateApple();
+        } else{
+            for(int i = 0; i < mics.length; i++){
+               if ((mics[i].getX()== apple_x) && (mics[i].getY()== apple_y)){
+                   locateApple();
+               }
+            }
         }
     }
 
@@ -289,7 +214,9 @@ public class Display extends JPanel implements ActionListener {
 
         r = (int) (Math.random() * RAND_POS);
         apple_y = ((r * DOT_SIZE));
-        founded = false;
+        for(int i = 0; i < mics.length; i++){
+            mics[i].setFounded(false);
+        }
     }
 
     @Override
@@ -299,8 +226,10 @@ public class Display extends JPanel implements ActionListener {
             checkApple();
             checkCollision();
             move();
+            for(int i = 0; i < mics.length; i++){
+                mics[i].micLookForApple(apple_x, apple_y);
+            }
 
-            micLookForApple();
         }
 
         repaint();
