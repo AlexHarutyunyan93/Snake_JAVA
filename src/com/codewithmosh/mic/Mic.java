@@ -1,11 +1,15 @@
 package com.codewithmosh.mic;
 
 import com.codewithmosh.DirectionEnum;
+import com.codewithmosh.food.Food;
 
 import javax.swing.*;
 
 import java.awt.*;
 import java.awt.image.ImageObserver;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static com.codewithmosh.DirectionEnum.*;
 
@@ -21,15 +25,18 @@ public class Mic implements MicSchema {
     private int micCheckLevel;
     private int lifeCicle;
     private Image micImage;
+    private Food food = null;
 
     public Mic(int x, int y, int b_WIDTH, int b_HEIGHT){
+        B_WIDTH = b_WIDTH;
+        B_HEIGHT = b_HEIGHT;
         lifeCicle = 150;
         this.steps = 0;
         this.mic_x = x;
         this.mic_y = y;
         micDirection = LEFT;
         founded = false;
-        micCheckLevel = 1;
+        micCheckLevel = 10;
         loadImages();
     }
 
@@ -57,25 +64,35 @@ public class Mic implements MicSchema {
     public void doDrawing(Graphics g, ImageObserver parent){
         g.drawImage(micImage, getX(), getY(), parent);
     }
+    private void addLifeCicle(){
+        lifeCicle += 50;
+        micCheckLevel++;
+    }
 
-        @Override
-    public void micMoveToApple(int appleX,int appleY) {
-        if(mic_x == appleX && mic_y == appleY) {
-            micCheckLevel++;
-        } else if(mic_x != appleX && mic_y != appleY) {
-            int x = B_WIDTH - mic_x - appleX;
-            int y = B_HEIGHT - mic_y - appleY;
+    private void removeFood(){
+        this.food = null;
+    }
+
+    @Override
+    public void micMoveToFood(int foodX, int foodY) {
+        if(mic_x == foodX && mic_y == foodY) {
+            addLifeCicle();
+            setFounded(false);
+            removeFood();
+        } else if(mic_x != foodX && mic_y != foodY) {
+            int x = Math.abs(mic_x - foodX);
+            int y = Math.abs(mic_y - foodY);
             if(x > y) {
-                mic_x = mic_x < appleX ? mic_x + 10 : mic_x - 10;
+                mic_x = mic_x < foodX ? mic_x + 10 : mic_x - 10;
             } else {
-                mic_y = mic_y < appleY ? mic_y + 10 : mic_y - 10;
+                mic_y = mic_y < foodY ? mic_y + 10 : mic_y - 10;
             }
         } else {
-            if (mic_x != appleX) {
-                mic_x = mic_x < appleX ? mic_x + 10 : mic_x - 10;
+            if (mic_x != foodX) {
+                mic_x = mic_x < foodX ? mic_x + 10 : mic_x - 10;
             }
-            if(mic_y != appleY){
-                mic_y = mic_y < appleY ? mic_y + 10 : mic_y - 10;
+            if(mic_y != foodY){
+                mic_y = mic_y < foodY ? mic_y + 10 : mic_y - 10;
             }
 
         }
@@ -127,21 +144,36 @@ public class Mic implements MicSchema {
     }
 
     @Override
-    public void micLookForApple(int appleX, int appleY) {
+    public void micLookForFood(List<Food> foods) {
         lifeCicle--;
-        if(!founded){
-            if(Math.abs(appleY - mic_y) < (micCheckLevel * 10) || Math.abs(appleX - mic_x) < (micCheckLevel * 10)){
-                founded = true;
-                lifeCicle += 50;
-            }
+        List<Integer> farFromFood = new ArrayList<>();
+        List<Food> availibleFoods = new ArrayList<>();
 
+        if(!founded){
+            for(int i = 0; i < foods.size(); i++){
+                int fFFX = Math.abs(foods.get(i).getX() - mic_x);
+                int fFFY = Math.abs(foods.get(i).getY() - mic_y);
+
+                if(fFFX < (micCheckLevel * 10) && fFFY < (micCheckLevel * 10)){
+                    farFromFood.add(fFFX + fFFY);
+                    availibleFoods.add(foods.get(i));
+                }
+            }
+            setFounded(farFromFood.size() != 0);
             if(founded){
-                micMoveToApple(appleX, appleY);
+                int min = Collections.min(farFromFood);
+                int index = farFromFood.indexOf(min);
+                food = availibleFoods.get(index);
+                micMoveToFood(food.getX(), food.getY());
             } else {
                 micMove(micDirection);
             }
         } else {
-            micMoveToApple(appleX, appleY);
+            if(food != null){
+                micMoveToFood(food.getX(), food.getY());
+            } else {
+                micMove(micDirection);
+            }
         }
     }
 }

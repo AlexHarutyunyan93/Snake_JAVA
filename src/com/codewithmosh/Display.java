@@ -1,5 +1,7 @@
 package com.codewithmosh;
 
+import com.codewithmosh.food.Food;
+import com.codewithmosh.food.Foods;
 import com.codewithmosh.mic.Mic;
 import com.codewithmosh.snake.Snake;
 
@@ -8,48 +10,40 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import javax.swing.ImageIcon;
+import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class Display extends JPanel implements ActionListener {
 
-    private final int B_WIDTH = 1200;
-    private final int B_HEIGHT = 800;
-    private final int DOT_SIZE = 10;
+    private final int B_WIDTH = 1600;
+    private final int B_HEIGHT = 1000;
     private final int ALL_DOTS = 900;
-    private final int RAND_POS = 79;
-    private final int DELAY = 150;
-
-    private int apple_x;
-    private int apple_y;
-    private int banana_x;
-    private int banana_y;
+    private final int DELAY = 100;
 
     private boolean inGame = true;
 
     private Timer timer;
-    private Image apple;
-    private Image banana;
-    private Image[] micImages;
     private int micsSize;
-    private ArrayList<Mic> mics = new ArrayList<Mic>(micsSize);
+    private ArrayList<Mic> mics = new ArrayList<>(micsSize);
     private Snake snake;
+    private Foods foods;
+    private List<Food> foodsList;
+
 
     public Display() {
-
-        snake = new Snake(900);
-        micsSize = 20;
+        foods = new Foods(B_WIDTH, B_HEIGHT);
+        foodsList = foods.getFoodsList();
+        snake = new Snake(ALL_DOTS);
+        micsSize = 100;
 
         for(int i = 0; i < micsSize; i++){
-            mics.add(new Mic(400,200, B_WIDTH, B_HEIGHT));
+            mics.add(new Mic((int) (Math.random() * (B_HEIGHT/10-1))*10,(int) (Math.random() * (B_HEIGHT/10-1))*10, B_WIDTH, B_HEIGHT));
         }
-        micImages = new Image[micsSize];
         initDisplay();
     }
 
@@ -58,24 +52,9 @@ public class Display extends JPanel implements ActionListener {
         setFocusable(true);
         addKeyListener(snake.getKeyboardListener());
         setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
-        loadImages();
         initGame();
     }
-
-    private void loadImages() {
-        ImageIcon iib = new ImageIcon("src/resources/banana.jpg");
-        banana = iib.getImage();
-
-        ImageIcon iia = new ImageIcon("src/resources/apple.png");
-        apple = iia.getImage();
-
-    }
-
     private void initGame() {
-
-        locateApple();
-        locateBanana();
-
         timer = new Timer(DELAY, this);
         timer.start();
     }
@@ -90,9 +69,7 @@ public class Display extends JPanel implements ActionListener {
     private void doDrawing(Graphics g) {
 
         if (inGame) {
-
-            g.drawImage(apple, apple_x, apple_y, this);
-            g.drawImage(banana, banana_x, banana_y, this);
+            foods.doDrawing(g, this);
 
             for(int i = 0; i < mics.size(); i++){
                 mics.get(i).doDrawing(g,this);
@@ -119,23 +96,23 @@ public class Display extends JPanel implements ActionListener {
         g.drawString(msg, (B_WIDTH - metr.stringWidth(msg)) / 2, B_HEIGHT / 2);
     }
 
-    private void checkApple() {
-        if ((snake.getX(0) == banana_x) && (snake.getY(0) == banana_y)) {
-            snake.setDots();
-            locateBanana();
+    private void checkFood(){
+        /////mic check
+        for(int i = 0; i < foodsList.size(); i++) {
+            for(int j = 0; j < mics.size(); j++) {
+                if (mics.get(j).getX() == foodsList.get(i).getX() && mics.get(j).getY() == foodsList.get(i).getY())
+                    foods.eatFood(i);
+            }
         }
-        if ((snake.getX(0) == apple_x) && (snake.getY(0) == apple_y)) {
-            snake.setDots();
-            locateApple();
-        } else{
-            for(int i = 0; i < mics.size(); i++){
-               if ((mics.get(i).getX()== apple_x) && (mics.get(i).getY()== apple_y)){
-                   locateApple();
-               }
+        //// snake check
+        for(int i = 0; i < foodsList.size(); i++){
+            if ((snake.getX(0) == foodsList.get(i).getX()) &&
+                    (snake.getY(0) == foodsList.get(i).getY())) {
+                snake.setDots();
+                foods.eatFood(i);
             }
         }
     }
-
 
     private void checkCollision() {
 
@@ -167,46 +144,25 @@ public class Display extends JPanel implements ActionListener {
         }
     }
 
-    private void locateApple() {
-
-        int r = (int) (Math.random() * RAND_POS);
-        apple_x = ((r * DOT_SIZE));
-
-        r = (int) (Math.random() * RAND_POS);
-        apple_y = ((r * DOT_SIZE));
-
-        for(int i = 0; i < mics.size(); i++){
-            mics.get(i).setFounded(false);
-        }
-    }
-
-    private void locateBanana() {
-
-        int r = (int) (Math.random() * RAND_POS);
-        banana_x = ((r * DOT_SIZE));
-
-        r = (int) (Math.random() * RAND_POS);
-        banana_y = ((r * DOT_SIZE));
-
-//        for(int i = 0; i < mics.length; i++){
-//            mics[i].setFounded(false);
-//        }
-    }
     @Override
     public void actionPerformed(ActionEvent e) {
+
         for(int i = 0; i < mics.size(); i++) {
            if(mics.get(i).getLifeCicle() == 0){
                mics.remove(i);
            }
         }
+
         if (inGame) {
-            checkApple();
+            checkFood();
             checkCollision();
             snake.move();
+
             for(int i = 0; i < mics.size(); i++){
-                mics.get(i).micLookForApple(apple_x, apple_y);
+                mics.get(i).micLookForFood(foodsList);
             }
         }
+
         repaint();
     }
 }

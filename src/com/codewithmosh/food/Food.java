@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.image.ImageObserver;
 
 
-class Food {
+public class Food {
     private int nutritionally;
     private ImageIcon image;
     private int x;
@@ -40,5 +40,5 @@ class Food {
         return y;
     }
 
-    public void doDrowing(Graphics g, ImageObserver parent) {}
+    public void doDrawing(Graphics g, ImageObserver parent) {}
 }
