@@ -5,7 +5,7 @@ import java.awt.image.ImageObserver;
 import java.util.ArrayList;
 
 public class Foods {
-    private final int initialFoodCount = 10;
+    private final int initialFoodCount = 50;
     private  ArrayList<Food> barnWithFood = new ArrayList<Food>(initialFoodCount);
     public int B_WIDTH;
     public int B_HEIGHT;

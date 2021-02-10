@@ -39,10 +39,10 @@ public class Display extends JPanel implements ActionListener {
         foods = new Foods(B_WIDTH, B_HEIGHT);
         foodsList = foods.getFoodsList();
         snake = new Snake(ALL_DOTS);
-        micsSize = 100;
+        micsSize = 25;
 
         for(int i = 0; i < micsSize; i++){
-            mics.add(new Mic((int) (Math.random() * (B_HEIGHT/10-1))*10,(int) (Math.random() * (B_HEIGHT/10-1))*10, B_WIDTH, B_HEIGHT));
+            mics.add(new Mic((int) (Math.random() * (B_WIDTH/10-1))*10,(int) (Math.random() * (B_HEIGHT/10-1))*10, B_WIDTH, B_HEIGHT));
         }
         initDisplay();
     }
@@ -100,7 +100,7 @@ public class Display extends JPanel implements ActionListener {
         /////mic check
         for(int i = 0; i < foodsList.size(); i++) {
             for(int j = 0; j < mics.size(); j++) {
-                if (mics.get(j).getX() == foodsList.get(i).getX() && mics.get(j).getY() == foodsList.get(i).getY())
+                if (foodsList.size() != i && mics.get(j).getX() == foodsList.get(i).getX() && mics.get(j).getY() == foodsList.get(i).getY())
                     foods.eatFood(i);
             }
         }

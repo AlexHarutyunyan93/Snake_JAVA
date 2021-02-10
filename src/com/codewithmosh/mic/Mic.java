@@ -75,10 +75,10 @@ public class Mic implements MicSchema {
 
     @Override
     public void micMoveToFood(int foodX, int foodY) {
-        if(mic_x == foodX && mic_y == foodY) {
-            addLifeCicle();
-            setFounded(false);
-            removeFood();
+        boolean isEqualCoordinates = mic_x == foodX && mic_y == foodY;
+
+        if(isEqualCoordinates) {
+            micEatFood();
         } else if(mic_x != foodX && mic_y != foodY) {
             int x = Math.abs(mic_x - foodX);
             int y = Math.abs(mic_y - foodY);
@@ -96,6 +96,12 @@ public class Mic implements MicSchema {
             }
 
         }
+    }
+
+    private void micEatFood() {
+        addLifeCicle();
+        setFounded(false);
+        removeFood();
     }
 
     @Override
